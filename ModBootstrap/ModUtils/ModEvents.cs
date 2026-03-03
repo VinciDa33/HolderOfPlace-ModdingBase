@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameObject = UnityEngine.GameObject;
 using UnityEngine.Events;
 
 namespace ModUtils
@@ -50,9 +51,12 @@ namespace ModUtils
 
             KeyList[] lists = ThreadControl.Main.GetComponentsInChildren<KeyList>();
             LibraryExt.leaderPool.Clear();
+            LibraryExt.hollowPool.Clear();
+            LibraryExt.seaPool.Clear();
+            //Need to clean out hollowPool of sandbat himself.
             foreach(ModdedCard c in LibraryExt.modAssets.GetComponentsInChildren<ModdedCard>())
             {
-                if (!c.gameObject.activeSelf)
+                if (!c.gameObject.activeSelf || (c.mod != null && !c.mod.enabled))
                 {
                     continue;
                 }
@@ -68,6 +72,40 @@ namespace ModUtils
                 {
                     LibraryExt.leaderPool.Add(c._cardInfo.Key);
                 }
+                if (c.pools.Contains("Sea"))
+                {
+                    LibraryExt.seaPool.Add(c._cardInfo.Key);
+                }
+                if (c.pools.Contains("Hollow"))
+                {
+                    LibraryExt.hollowPool.Add(c._cardInfo.Key);
+                }
+            }
+            Event seakissed = ThreadControl.Main.FindEvent("Recruit_Sea_Real");
+            if (seakissed is Event_FR_RecruitII seaEvent)
+            {
+                foreach(string key in LibraryExt.seaPool)
+                {
+                    seaEvent.Keys.Add(key);
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("[CORE] Sea Not Found");
+            }
+
+            GameObject sandbat = Library.Main.GetCard("Sandbat");
+            if (sandbat != null)
+            {
+                Signal_ReplaceRecruitOverride signal = sandbat.GetComponentInChildren<Signal_ReplaceRecruitOverride>();
+                foreach (string key in LibraryExt.seaPool)
+                {
+                    signal.Keys.Add(key);
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("[CORE] Sandbat Not Found");
             }
         }
 

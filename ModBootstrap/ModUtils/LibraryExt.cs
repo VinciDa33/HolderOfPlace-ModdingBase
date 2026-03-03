@@ -18,6 +18,10 @@ namespace ModUtils
     {
         internal static GameObject modAssets;
         internal static List<string> leaderPool = new List<string>();
+        //@Recruit_Sea_Real
+        internal static List<string> seaPool = new List<string>();
+        //Sandbat's Signal_Recruit keys
+        internal static List<string> hollowPool = new List<string>();
 
         public static List<GameObject> animPrefabs = new List<GameObject>();
 
@@ -383,6 +387,27 @@ namespace ModUtils
                 key = Library.Main.Keys.FirstOrDefault(k => k.ToLower() == s.ToLower());
             }
             return key;
+        }
+
+        public static List<string> FindPartialKey(string s)
+        {
+            s = s.ToLower();
+            List<string> keys = new List<string>();
+            List<string> subkeys = new List<string>();
+            for(int i=0; i<Library.Main.Keys.Count; i++)
+            {
+                string k = Library.Main.Keys[i].ToLower();
+                if (k.StartsWith(s))
+                {
+                    keys.Add(k);
+                }
+                else if (k.Contains(s))
+                {
+                    subkeys.Add(k);
+                }
+            }
+            keys.AddRange(subkeys);
+            return keys;
         }
 
         [HarmonyPostfix]

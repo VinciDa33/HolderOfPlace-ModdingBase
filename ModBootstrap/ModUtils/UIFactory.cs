@@ -117,8 +117,8 @@ namespace ModUtils
 
             _inputField.caretWidth = 3; //caretWidth is an integer, sadly :(
                                         //Small trick to spawn the caret
-                                        //_inputField.enabled = false;
-                                        //_inputField.enabled = true;
+            _inputField.enabled = false;
+            _inputField.enabled = true;
 
             textarea.transform.localScale = ((fontRatio * size.y / baseFontSize) * new Vector3(1, 1, 0)) + new Vector3(0, 0, 1);
             container.transform.localPosition = position;

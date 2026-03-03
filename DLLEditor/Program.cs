@@ -1,18 +1,19 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
-using ADV;
-using System.Reflection;
+﻿using ADV;
 using ModdingCore;
-using UnityEngine;
 using ModUtils;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using System.Diagnostics;
+using System.Reflection;
+using UnityEngine;
 
 internal class Program
 {
-    static String inputDirectory = "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
-    static String inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
-    static String modPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\ModBootstrap.dll";
+    static string inputDirectory = "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
+    static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
+    static string modPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\ModBootstrap.dll";
 
-    static String outputPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\Assembly-CSharp.dll";
+    static string outputPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\Assembly-CSharp.dll";
     static void Main(string[] args)
     {
         var assemblyPath = Path.GetFullPath(inputPath);
@@ -34,26 +35,17 @@ internal class Program
         Console.WriteLine("1st Change Successful!");
 
         //Event Insertion: Card Generated
-        var _cardGenerated = FindMethod(_assembly, nameof(RecruitPanel), nameof(RecruitPanel.Generate), 5);
-        processor = _cardGenerated.Body.GetILProcessor();
-        instruction = processor.Body.Instructions.FirstOrDefault(i =>
+        //Spot 1: RecruitPanel.Generate
+        //Spot 2: EncounterPanel.NewCards
+        //Spot 3: EncounterPanel.ImportAdditionalCards
+        if (
+            AddCardGeneratedEvent(_assembly, nameof(RecruitPanel), nameof(RecruitPanel.Generate), 5, OpCodes.Ldloc_0, null) &&
+            AddCardGeneratedEvent(_assembly, nameof(EncounterPanel), nameof(EncounterPanel.NewCards), 1, OpCodes.Ldloc, 8) &&
+            AddCardGeneratedEvent(_assembly, nameof(EncounterPanel), nameof(EncounterPanel.ImportAdditionalCards), 0, OpCodes.Ldloc, 8)
+            )
         {
-            
-            //Console.WriteLine(methodRef);
-            //Console.WriteLine(i.Offset + ": " + i.OpCode);
-            
-            return (i.Operand?.ToString() == "!!0 UnityEngine.Object::Instantiate<UnityEngine.GameObject>(!!0,UnityEngine.Transform)");
-        });
-        if (instruction == null)
-        {
-            Console.WriteLine("2nd Change Unsuccessful");
-            return;
+            Console.WriteLine("3rd Change Successful!");
         }
-        int index = processor.Body.Instructions.ToList().IndexOf(instruction) + 2;
-        processor.InsertAfter(index, processor.Create(OpCodes.Call, GetMethodReference<ModEvents>(_assembly, nameof(ModEvents.InvokeCardGenerated), new Type[] { typeof(Card) })));
-        processor.InsertAfter(index, processor.Create(OpCodes.Ldloc_0));
-        Console.WriteLine("3rd Change Successful!");
-
         //4+5. Button changes
         var _buttonUpdate = FindMethod(_assembly, nameof(UIButton), nameof(UIButton.Update), 0);
         processor = _buttonUpdate.Body.GetILProcessor();
@@ -85,6 +77,34 @@ internal class Program
         Console.WriteLine("Outputting!");
         _assembly.Write(outputPath);
         Console.WriteLine("Done!");
+    }
+
+    static bool AddCardGeneratedEvent(AssemblyDefinition _assembly, string className, string methodName, int parameterCount, OpCode op, short? obj)
+    {
+        var _cardGenerated = FindMethod(_assembly, className, methodName, parameterCount);
+        var processor = _cardGenerated.Body.GetILProcessor();
+        var instruction = processor.Body.Instructions.FirstOrDefault(i =>
+        {
+            return (i.Operand?.ToString() == "!!0 UnityEngine.Object::Instantiate<UnityEngine.GameObject>(!!0,UnityEngine.Transform)");
+        });
+        if (instruction == null)
+        {
+            Console.WriteLine("Change Unsuccessful ("+className +"."+methodName+")");
+            return false;
+        }
+        int index = processor.Body.Instructions.ToList().IndexOf(instruction) + 2;
+        object operand = processor.Body.Instructions[index].Operand;
+        processor.InsertAfter(index, processor.Create(OpCodes.Call, GetMethodReference<ModEvents>(_assembly, nameof(ModEvents.InvokeCardGenerated), new Type[] { typeof(Card) })));
+        if (obj == null)
+        {
+            processor.InsertAfter(index, processor.Create(op));
+        }
+        else
+        {
+            System.Console.WriteLine(op.OperandType);
+            processor.InsertAfter(index, processor.Create(op,(short)obj));
+        }
+        return true;
     }
 
     static PropertyDefinition FindProperty(AssemblyDefinition _assembly, string type, string property)

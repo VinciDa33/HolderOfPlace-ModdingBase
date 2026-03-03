@@ -15,6 +15,9 @@ namespace ModdingCore
         public static CommandLine main;
         public static GameObject inputFieldHolder;
         public static TMP_InputField inputField;
+        public static TextMeshPro autoComplete;
+
+        public static Dictionary<string, Command> commands = new Dictionary<string, Command>();
 
         public static int blocking = 0;
 
@@ -24,6 +27,8 @@ namespace ModdingCore
 
         public static void CreateCommandLineHolder()
         {
+           Command.LoadInitCommands(commands);
+
             GameObject obj = new GameObject("CommandLineHolder");
             main = obj.AddComponent<CommandLine>();
             DontDestroyOnLoad(obj);
@@ -35,6 +40,37 @@ namespace ModdingCore
             if (Input.GetKeyDown(KeyCode.BackQuote) || Input.GetKeyDown(KeyCode.Tilde))
             {
                 ToggleInputField();
+            }
+            else if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                if (autocompletes != null && autocompletes.Count > 0)
+                {
+                    string[] currentText = inputField.textComponent.text.Split(' ');
+                    currentText[currentText.Length - 1] = autocompletes[0];
+                    string text = string.Join(" ", currentText);
+                    inputField.SetTextWithoutNotify(text);
+                    inputField.MoveToEndOfLine(false, false);
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (autocompletes != null && autocompletes.Count > 1)
+                {
+                    string s = autocompletes[0];
+                    autocompletes.RemoveAt(0);
+                    autocompletes.Add(s);
+                    ProduceAutocomplete();
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if (autocompletes != null && autocompletes.Count > 1)
+                {
+                    string s = autocompletes[autocompletes.Count-1];
+                    autocompletes.RemoveAt(autocompletes.Count - 1);
+                    autocompletes.Insert(0,s);
+                    ProduceAutocomplete();
+                }
             }
         }
 
@@ -62,9 +98,12 @@ namespace ModdingCore
                 inputFieldHolder.transform.position = new Vector3(0, 0, -8);
                 inputFieldHolder.SetActive(true);
 
+                autocompletes.Clear();
+                ProduceAutocomplete();
+
                 inputField.ActivateInputField();
                 inputField.Select();
-                inputField.textComponent.SetText("");
+                inputField.SetTextWithoutNotify("");
             }
         }
 
@@ -90,6 +129,50 @@ namespace ModdingCore
             inputField.transform.localScale = new Vector3(4, 4, 1);
             inputField.onSubmit.AddListener(IssueCommand);
             inputField.onDeselect.AddListener(Deselect);
+            inputField.onValueChanged.AddListener(OnValueChanged);
+
+            autoComplete = UIFactory.Text(inputFieldHolder.transform, new Vector3(0, -5, 0), "", 20);
+            autoComplete.rectTransform.sizeDelta = new Vector2(125, 5);
+            autoComplete.alignment = TextAlignmentOptions.TopLeft;
+        }
+
+        public void OnValueChanged(string s)
+        {
+            string[] parts = s.Split(' ');
+            if (parts.Length == 1)
+            {
+                autocompletes = commands.Keys.Where(k => k.StartsWith(parts[0])).ToList();
+            }
+            else if (parts.Length > 1)
+            {
+                if (commands.ContainsKey(parts[0].ToLower()))
+                {
+                    autocompletes = commands[parts[0].ToLower()].OnValueChanged(parts.Skip(1).ToArray());
+                    
+                }
+            }
+            ProduceAutocomplete();
+        }
+
+        public void ProduceAutocomplete()
+        {
+            if (autocompletes == null)
+            {
+                autocompletes = new List<string>();
+            }
+            if (autocompletes.Count == 0)
+            {
+                autoComplete.SetText("");
+                return;
+            }
+
+            string s = "";
+            for(int i=0; i<autocompletes.Count-1; i++)
+            {
+                s += autocompletes[i] + "\n";
+            }
+            s += autocompletes[autocompletes.Count - 1];
+            autoComplete.SetText(s);
         }
 
         public void Deselect(string s)
@@ -107,9 +190,23 @@ namespace ModdingCore
 
         public void IssueCommand(string command)
         {
-            inputField.textComponent.SetText("");
+            inputField.SetTextWithoutNotify("");
+            autocompletes.Clear();
+            ProduceAutocomplete();
             System.Console.WriteLine("[Command] " + command);
             string[] parts = command.ToLower().Split(' ');
+
+            if (parts.Length == 0 || !commands.ContainsKey(parts[0].ToLower()))
+            {
+                return;
+            }
+
+            commands[parts[0].ToLower()].Run(parts.Skip(1).ToList());
+
+            inputField.ActivateInputField();
+            inputField.Select();
+
+            /*
             if (parts.Length > 1 && parts[0] == "recruit" && RecruitPanel.Main != null)
             {
                 string key = null;
@@ -221,6 +318,8 @@ namespace ModdingCore
             
             inputField.ActivateInputField();
             inputField.Select();
+            */
         }
+            
     }
 }
