@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TMPro;
+using UnityEngine;
 
 namespace ModdingCore
 {
@@ -32,27 +33,37 @@ namespace ModdingCore
             AddCommand(new CommandNumber()
             {
                 id = "faith",
-                floatFunc = CommandNumber.Faith
+                action = CommandNumber.Faith
             });
             AddCommand(new CommandNumber()
             {
                 id = "locus",
-                floatFunc = CommandNumber.Locus
+                action = CommandNumber.Locus
             });
             AddCommand(new CommandNumber()
             {
                 id = "core",
-                floatFunc = CommandNumber.Core
+                action = CommandNumber.Core
             });
             AddCommand(new CommandCard()
             {
                 id = "life",
-                cardFunc = CommandCard.Life
+                action = CommandCard.Life
             });
             AddCommand(new CommandCard()
             {
                 id = "damage",
-                cardFunc = CommandCard.Damage
+                action = CommandCard.Damage
+            });
+            AddCommand(new CommandCard()
+            {
+                id = "destroy",
+                action = CommandCard.Destroy
+            });
+            AddCommand(new CommandGeneric()
+            {
+                id = "skip",
+                action = CommandGeneric.SkipEvent
             });
         }
 
@@ -155,9 +166,29 @@ namespace ModdingCore
             }
         }
 
+        public class CommandGeneric : Command
+        {
+            public Action<List<string>> action;
+
+            public override void Run(List<string> messages)
+            {
+                action(messages);
+            }
+
+            public static void SkipEvent(List<string> messages)
+            {
+                if (ThreadControl.Main == null)
+                {
+                    Fail("Run has not started");
+                }
+
+                ThreadControl.Main.NextEvent();
+            }
+        }
+
         public class CommandNumber : Command
         {
-            public Action<float> floatFunc;
+            public Action<float> action;
             public override void Run(List<string> messages)
             {
                 if (messages.Count == 0)
@@ -165,7 +196,7 @@ namespace ModdingCore
                     messages.Add("1");
                 }
 
-                floatFunc(SafeParseFloat(messages[0], 1));
+                action(SafeParseFloat(messages[0], 1));
             }
 
             public static void Faith(float amount)
@@ -182,14 +213,14 @@ namespace ModdingCore
 
             public static void Core(float amount)
             {
-                CombatControl.Main.ChangeCoreLife(amount);
+                CombatControl.Main.SetCoreLife(amount);
                 Success();
             }
         }
 
         public class CommandCard : Command
         {
-            public Action<List<string>, Card> cardFunc;
+            public Action<List<string>, Card> action;
             public override void Run(List<string> messages)
             {
                 if (UIControl.Main?.SelectingCard == null)
@@ -197,7 +228,7 @@ namespace ModdingCore
                     Fail("Must be hovering over a card to use command");
                     return;
                 }
-                cardFunc(messages, UIControl.Main.SelectingCard);
+                action(messages, UIControl.Main.SelectingCard);
             }
 
             public static void Life(List<string> messages,  Card card)
@@ -223,6 +254,11 @@ namespace ModdingCore
                 float amount = SafeParseFloat(messages[0], 1);
                 card.SetBaseDamage(amount);
                 Success();
+            }
+
+            public static void Destroy(List<string> messages, Card card)
+            {
+                card.Destroy();
             }
         }
     }

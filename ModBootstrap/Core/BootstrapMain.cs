@@ -14,7 +14,7 @@ namespace ModdingCore
 {
     public class BootstrapMain
     {
-        public static string version = "v0.0.9";
+        public static string version = "v0.1.0";
         public static string StreamingAssetPath;
         public static string modPath;
         public static string corePath;
@@ -74,7 +74,6 @@ namespace ModdingCore
 
         public static bool IsInputAllowed()
         {
-            System.Console.WriteLine("[CORE] inputAllowed: " + (inputBlock == 0));
             return (inputBlock == 0);
         }
 
@@ -91,6 +90,7 @@ namespace ModdingCore
                     Console.LoadConsole();
                 }
                 StartHarmony();
+                LibraryExt.StartVirtualPools();
                 ModMenu.CreateModMenu();
                 CommandLine.CreateCommandLineHolder();
 
@@ -142,7 +142,6 @@ namespace ModdingCore
             {
                 foreach(Assembly assembly in assemblyDictionary[path])
                 {
-                    System.Console.WriteLine("Assembly: " + path);
                     Type type = assembly.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(HopMod)));
                     if (type != null)
                     {

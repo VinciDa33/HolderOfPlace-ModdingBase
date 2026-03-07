@@ -50,9 +50,7 @@ namespace ModUtils
             OnThreadGenerated?.Invoke(events);
 
             KeyList[] lists = ThreadControl.Main.GetComponentsInChildren<KeyList>();
-            LibraryExt.leaderPool.Clear();
-            LibraryExt.hollowPool.Clear();
-            LibraryExt.seaPool.Clear();
+            LibraryExt.ClearAllPools();
             //Need to clean out hollowPool of sandbat himself.
             foreach(ModdedCard c in LibraryExt.modAssets.GetComponentsInChildren<ModdedCard>())
             {
@@ -68,48 +66,82 @@ namespace ModUtils
                         l.Keys.Add(c._cardInfo.Key);
                     }
                 });
-                if (c.pools.Contains("Leader"))
+
+                void TryAddToVirtualPool(string pool)
                 {
-                    LibraryExt.leaderPool.Add(c._cardInfo.Key);
+                    if (c.pools.Contains(pool))
+                    {
+                        LibraryExt.virtPools[pool].Add(c._cardInfo.Key);
+                    }
                 }
-                if (c.pools.Contains("Sea"))
-                {
-                    LibraryExt.seaPool.Add(c._cardInfo.Key);
-                }
-                if (c.pools.Contains("Hollow"))
-                {
-                    LibraryExt.hollowPool.Add(c._cardInfo.Key);
-                }
+
+                TryAddToVirtualPool("Origin");
+                TryAddToVirtualPool("Sea");
+                TryAddToVirtualPool("Hollow");
+                TryAddToVirtualPool("Trinket_Early");
+                TryAddToVirtualPool("Trinket_Middle");
+                TryAddToVirtualPool("Trinket_Late");
+
             }
-            Event seakissed = ThreadControl.Main.FindEvent("Recruit_Sea_Real");
-            if (seakissed is Event_FR_RecruitII seaEvent)
+            Event @event = ThreadControl.Main.FindEvent("Recruit_Sea_Real");
+            if (@event is Event_FR_RecruitII seaEvent)
             {
-                foreach(string key in LibraryExt.seaPool)
+                System.Console.WriteLine("[CORE] Adding To Sea Pool");
+                foreach (string key in LibraryExt.virtPools["Sea"])
                 {
                     seaEvent.Keys.Add(key);
+                } 
+            }
+            @event = ThreadControl.Main.FindEvent("Recruit_II_Trinket");
+            if (@event is Event_FR_RecruitII trinketEarly)
+            {
+                System.Console.WriteLine("[CORE] Adding To Early Trinkets");
+                foreach (string key in LibraryExt.virtPools["Trinket_Early"])
+                {
+                    trinketEarly.AddKeys.Add(key + "[2");
                 }
             }
-            else
+            @event = ThreadControl.Main.FindEvent("Recruit_III_Trinket");
+            if (@event is Event_FR_RecruitII trinketMiddle)
             {
-                System.Console.WriteLine("[CORE] Sea Not Found");
+                System.Console.WriteLine("[CORE] Adding To Mid Trinkets");
+                foreach (string key in LibraryExt.virtPools["Trinket_Middle"])
+                {
+                    trinketMiddle.AddKeys.Add(key + "[2");
+                }
+            }
+            @event = ThreadControl.Main.FindEvent("Recruit_FirstEndless");
+            if (@event is Event_FR_RecruitII trinketEnd)
+            {
+                System.Console.WriteLine("[CORE] Adding To Endless Trinkets");
+                foreach (string key in LibraryExt.virtPools["Trinket_Late"])
+                {
+                    trinketEnd.KeysII.Add(key);
+                }
+            }
+            @event = ThreadControl.Main.FindEvent("@Recruit_Endless");
+            if (@event is Event_FR_RecruitII trinketEnd2)
+            {
+                System.Console.WriteLine("[CORE] Adding To Endless Trinkets II");
+                foreach (string key in LibraryExt.virtPools["Trinket_Late"])
+                {
+                    trinketEnd2.KeysII.Add(key);
+                }
             }
 
             GameObject sandbat = Library.Main.GetCard("Sandbat");
             if (sandbat != null)
             {
+                System.Console.WriteLine("[CORE] Adding to Hollow Pool");
                 Signal_ReplaceRecruitOverride signal = sandbat.GetComponentInChildren<Signal_ReplaceRecruitOverride>();
                 for(int i=signal.Keys.Count-1; i>=7; i--)
                 {
                     signal.Keys.RemoveAt(i);
                 }
-                foreach (string key in LibraryExt.hollowPool)
+                foreach (string key in LibraryExt.virtPools["Hollow"])
                 {
                     signal.Keys.Add(key);
                 }
-            }
-            else
-            {
-                System.Console.WriteLine("[CORE] Sandbat Not Found");
             }
         }
 

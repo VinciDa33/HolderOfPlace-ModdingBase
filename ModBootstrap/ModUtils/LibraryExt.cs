@@ -17,17 +17,32 @@ namespace ModUtils
     public static class LibraryExt
     {
         internal static GameObject modAssets;
-        internal static List<string> leaderPool = new List<string>();
+        //internal static List<string> leaderPool = new List<string>();
         //@Recruit_Sea_Real
-        internal static List<string> seaPool = new List<string>();
+        //internal static List<string> seaPool = new List<string>();
         //Sandbat's Signal_Recruit keys
-        internal static List<string> hollowPool = new List<string>();
+        //internal static List<string> hollowPool = new List<string>();
 
         public static List<GameObject> animPrefabs = new List<GameObject>();
 
-        public static void DirectRecruit(string key)
+        internal static Dictionary<string, List<string>> virtPools = new Dictionary<string, List<string>>();
+
+        public static void StartVirtualPools()
         {
-            RecruitPanel.Main.DirectRecruit(key, true);
+            virtPools["Origin"] = new List<string>();
+            virtPools["Hollow"] = new List<string>();
+            virtPools["Sea"] = new List<string>();
+            virtPools["Trinket_Early"] = new List<string>();
+            virtPools["Trinket_Middle"] = new List<string>();
+            virtPools["Trinket_Late"] = new List<string>();
+        }
+
+        public static void ClearAllPools()
+        {
+            foreach(string key in virtPools.Keys)
+            {
+                virtPools[key].Clear();
+            }
         }
 
         public static void MapAllCards(int start, int amount, bool supressAutoAttack)
@@ -392,11 +407,16 @@ namespace ModUtils
         public static List<string> FindPartialKey(string s)
         {
             s = s.ToLower();
+            IEnumerable<string> list = Library.Main.Keys;
+            if (s.Length >= 2 && s[0] == '@')
+            {
+                list = Library.Main.CardPrefabs.Select(c => c.GetComponent<CardInfo>()?.RealName).Where(title => title!=null).Select(title => "@" + title.Replace(" ",""));
+            }
             List<string> keys = new List<string>();
             List<string> subkeys = new List<string>();
-            for(int i=0; i<Library.Main.Keys.Count; i++)
+            foreach(string key in list)
             {
-                string k = Library.Main.Keys[i].ToLower();
+                string k = key.ToLower();
                 if (k.StartsWith(s))
                 {
                     keys.Add(k);

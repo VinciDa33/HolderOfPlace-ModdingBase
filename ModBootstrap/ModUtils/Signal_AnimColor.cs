@@ -12,12 +12,14 @@ namespace ModUtils
     {
         public Color color;
 
+        /*
         public static Signal_AnimColor NewAnimColor(Color color, params string[] keys)
         {
             Signal_AnimColor signal = MarkFactory.NewSignal<Signal_AnimColor>(keys);
             signal.color = color;
             return signal;
         }
+        */
 
         public override void EndEffect()
         {

@@ -5,25 +5,23 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Diagnostics;
 using System.Reflection;
-using UnityEngine;
 
 internal class Program
 {
-    static string inputDirectory = "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
+    //Change these paths
     static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
-    static string modPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\ModBootstrap.dll";
+    static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
+    
 
-    static string outputPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed\\Assembly-CSharp.dll";
     static void Main(string[] args)
     {
-        var assemblyPath = Path.GetFullPath(inputPath);
-
-
+        string bootstrapPath = outputDirectory + "\\ModBootstrap.dll";
+        string outputPath = outputDirectory + "\\Assembly-CSharp.dll";
         var resolver = new DefaultAssemblyResolver();
-        resolver.AddSearchDirectory(inputDirectory);
+        resolver.AddSearchDirectory(outputDirectory);
 
-        AssemblyDefinition _assembly = AssemblyDefinition.ReadAssembly(assemblyPath, new ReaderParameters { AssemblyResolver = resolver });
-        AssemblyDefinition _mod = AssemblyDefinition.ReadAssembly( modPath, new ReaderParameters { AssemblyResolver = resolver });
+        AssemblyDefinition _assembly = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters { AssemblyResolver = resolver });
+        AssemblyDefinition _mod = AssemblyDefinition.ReadAssembly( bootstrapPath, new ReaderParameters { AssemblyResolver = resolver });
 
         Console.WriteLine("Assemblies Found!");
 
@@ -44,7 +42,7 @@ internal class Program
             AddCardGeneratedEvent(_assembly, nameof(EncounterPanel), nameof(EncounterPanel.ImportAdditionalCards), 0, OpCodes.Ldloc, 8)
             )
         {
-            Console.WriteLine("3rd Change Successful!");
+            Console.WriteLine("2nd Change Successful!");
         }
         //4+5. Button changes
         var _buttonUpdate = FindMethod(_assembly, nameof(UIButton), nameof(UIButton.Update), 0);
@@ -59,7 +57,7 @@ internal class Program
                 var endOfCheck = processor.Body.Instructions[i - 2];
                 processor.InsertAfter(endOfCheck, processor.Create(OpCodes.Brfalse_S, postIns));
                 processor.InsertAfter(endOfCheck, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.IsInputAllowed), Array.Empty<Type>())));
-                Console.WriteLine("4th Change Successful!");
+                Console.WriteLine("3rd Change Successful!");
                 i += 2;
             }
             if (ins.Operand?.ToString() == "System.Void ADV.UIButton::MouseUpEffect()")
@@ -68,7 +66,7 @@ internal class Program
                 var endOfCheck = processor.Body.Instructions[i - 2];
                 processor.InsertBefore(endOfCheck, processor.Create(OpCodes.Brfalse, postIns));
                 processor.InsertBefore(endOfCheck, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.IsInputAllowed), Array.Empty<Type>())));
-                Console.WriteLine("5th Change Successful!");
+                Console.WriteLine("4th Change Successful!");
                 i += 2;
             }
         }
@@ -101,7 +99,6 @@ internal class Program
         }
         else
         {
-            System.Console.WriteLine(op.OperandType);
             processor.InsertAfter(index, processor.Create(op,(short)obj));
         }
         return true;
@@ -111,7 +108,7 @@ internal class Program
     {
         var _type = _assembly.MainModule.Types.First(t => t.Name == type);
         var _property = _type.Properties.FirstOrDefault(f => f.Name == property);
-        Console.WriteLine($"Found Method: {type}.{property}");
+        //Console.WriteLine($"Found Method: {type}.{property}");
         return _property;
     }
 
@@ -124,10 +121,10 @@ internal class Program
 
     static MethodDefinition FindMethod(AssemblyDefinition _assembly, string type, string method, int parameters = 0)
     {
-        Console.WriteLine($"Searching for Method: {type}.{method}");
+        //Console.WriteLine($"Searching for Method: {type}.{method}");
         var _type = _assembly.MainModule.Types.FirstOrDefault(t => t.Name == type);
         var _method = _type.Methods.FirstOrDefault(_m => _m.Name == method && _m.Parameters.Count == parameters);
-        Console.WriteLine($"Found Method: {type}.{method}");
+        //Console.WriteLine($"Found Method: {type}.{method}");
         return _method;
     }
 
@@ -135,7 +132,7 @@ internal class Program
     {
         var _type = _assembly.MainModule.Types.FirstOrDefault(t => t.Name == type);
         var _method = _type.Methods.FirstOrDefault(_m => _m.Name == method && _m.IsStatic && _m.Parameters.Count <= parameters);
-        Console.WriteLine($"Found Method: {type}.{method}");
+        //Console.WriteLine($"Found Method: {type}.{method}");
         return _method;
     }
 }

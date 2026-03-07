@@ -47,6 +47,8 @@ namespace ModdingCore
             else
             {
                 transform.SetParent(parent, false);
+                TextMeshPro textbox = UIFactory.Text(GameObject.FindAnyObjectByType<TitleScreenControl>().transform, new Vector3(0, -8.5f, 10), "Modded\n" + BootstrapMain.version, 18);
+                textbox.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 10);
             }
             transform.localPosition = new Vector3(52, -3, 0);
             center = UIFactory.Button(transform, Vector3.zero, 20, 20);
@@ -104,9 +106,7 @@ namespace ModdingCore
         }
 
         public void CenterClicked()
-        {
-            System.Console.WriteLine("You clicked on a mod. Good Job!");
-            
+        {   
             if (mod == null)
             {
                 return;

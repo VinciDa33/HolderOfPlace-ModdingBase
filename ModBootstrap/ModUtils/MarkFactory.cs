@@ -216,6 +216,13 @@ namespace ModUtils
             return triggerSignal;
         }
 
+        public static Signal_ColorEffect NewColorEffect(Color color, params string[] keys)
+        {
+            Signal_ColorEffect signal = NewSignal<Signal_ColorEffect>(keys);
+            signal.color = color;
+            return signal;
+        }
+
         public static T AddMarkInfo<T>(this T mark, string name, string desc) where T:Mark
         {
             MarkInfo markInfo = mark.AddComponent<MarkInfo>();

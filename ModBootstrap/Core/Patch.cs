@@ -68,7 +68,7 @@ namespace ModdingCore
         {
             if (__instance.FirstRecruit)
             {
-                foreach(string key in LibraryExt.leaderPool)
+                foreach(string key in LibraryExt.virtPools["Origin"])
                 {
                     RecruitPanel.Main.RecruitOverride.Add(key);
                 }

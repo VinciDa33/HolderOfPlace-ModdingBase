@@ -75,6 +75,12 @@ namespace ModUtils
                     {
                         Destroy(card.IniSkills[i]);
                     }
+                    card.IniSkills.Clear();
+                    for (int i = card.AddConditions.Count-1; i>=0; i--)
+                    {
+                        Destroy(card.AddConditions[i]);
+                    }
+                    card.AddConditions.Clear();
                     break;
 
             }
@@ -105,7 +111,7 @@ namespace ModUtils
         {
             _cardInfo.RenderName = name;
             _cardInfo.RealName = name;
-            _cardInfo.Name = name;
+            _cardInfo.Name = mod.Guid + "." + name;
             gameObject.name = "@" + name;
             _cardInfo.Key = mod.Guid + "." + key;
             return this;
