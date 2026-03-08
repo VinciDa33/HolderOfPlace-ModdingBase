@@ -1,16 +1,51 @@
 # About
 This repository is an attempt to add a modding framework to the game "Holder of Place". 
-It consists of two parts: a DLLeditor that injects entry points into the source code and code that uses these entry points to establish a DLL reading framework.
+It consists of two parts: a DLLEditor that injects entry points into the source code and code that uses these entry points to establish a DLL reading framework.
 The setup will require a bit of technical know-how, but the installation below should smooth out the rough patches.
 
-# Installation [WORK IN PROGRESS]
+# Credits
+Creating this repository truly makes me feel like I am standing on the shoulders of giants.
+This would not have been possible without if the groundwork hasn't been already laid out.
+I would like to thank everyone who contributed to MonoMod, Harmony, and the Unity Explorer.
+I would also like to thank the creator of Holder of Place for making the game (and not using IL2CPP).
+
+# Downloads (v0.1.0)
+## Latest release version: 0.1.0 (Pre-Release)
+- [See all releases](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases)
+- [Dependencies (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/Dependencies.zip)
+- [StreamingAssets Folder (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/StreamingAssets.zip)
+- [ModBootstrap.dll (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/ModBootstrap.dll)
+- [Source Code (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/archive/refs/tags/v0.1.0.zip)
+
+
+# Installation
+
+> [!Note]
+> This section explains in detail how to set everything with essentially zero coding know-how. For those more well-versed, click the drop-down below for a very condensed summary. 
+> <details>
+> <summary>Summary of Installation</summary>
+>
+> 1. Locate the `...\HolderOfPlace_Data` folder on your computer ("Browse local files" on Steam).
+> 2. Place the StreamingAssets folder inside of the "HolderOfPlace_Data" folder (`...\HolderOfPlace_Data\StreamingAssets`).
+> 3. Locate `...\HolderOfPlace_Data\Managed` folder and copy its filepath for later.
+> 4. Place ModBootstrap.dll into this `...\Managed` folder (`...\Managed\ModBootstrap.dll`).
+> 5. Place all of the dlls in the Dependencies folder into this `...\HolderOfPlace_Data\Managed` (something like `...\Managed\DLL1.dll`, `...\Managed\DLL2.dll`, etc.)
+> 6. Inside of `...\Managed`, make a copy of `...\Managed\CSharp-Assembly.dll` and place it somewhere else. Save the filepath for later.
+> 7. Open the source code (obtained via .zip or forking/cloning the repository) in Visual Studios or similar IDE.
+> 8. For the DLLEditor project, add references to both `...\Managed\ModBootstrap.dll` and `...\Managed\CSharp-Assembly.dll` on your computer.
+> 9. They are likely some reference errors still. Clear those out and any other erros. Feel free to unload the ModBootstrap project if you don't want to fix those errors.
+> 10. Replace `outputDirectory` with the filepath you saved from step 3. Replace `inputPath` with the filepath you saved from step 6.
+> 11. Run DLLEditor.
+> 12. If there were no runtime errors or unsuccessful messages, you are finished! Run the game and see the results.
+> </details>
+
 ## Step 0: Prerequisite Downloads
 There are a few files and programs that you need to install first. They come from pretty standard websites.
 
 ---
 
 ### Visual Studios (or similar C# IDE)
-1. For maximum simplicity, download and install visual studios (VS): https://visualstudio.microsoft.com. The default free version is Visual Studios 2026 Community. This project was made in an older version of VS, but as long as it can run .Net Frmaework 4.8.1, it should work fine.
+1. For maximum simplicity, download and install visual studios (VS): https://visualstudio.microsoft.com. The default free version is Visual Studios 2026 Community. This project was made in an older version of VS, but as long as it can run .Net Framework 4.8.1, it should work fine.
 
 <p align=center>
 <img width="523" height="297" alt="image" src="https://github.com/user-attachments/assets/4384a5a5-b428-4847-95f7-52c6a9fd4192" />
@@ -29,7 +64,7 @@ There are a few files and programs that you need to install first. They come fro
 
 ### ModBootstrap and Harmony (w/Dependencies)
 
-We will require a few C# libraries that will not be packaged in with Visual Studios. [PAST ME: please add the dll file in this repo] There should be a folder in this repository marked "dlls". These are all the external dlls that you need to run this. If this is your first time trying to do something like this, this may seem a bit sketchy. Here is a summary of all of the dlls and where you can read up on or cross-validate them.
+We will require a few C# libraries that will not be packaged in with Visual Studios. See the Downloads section above. The Dependencies folder holds external dlls that you need to run this. In addition, there is one more dll download named ModBootstrap.dll. If this is your first time trying to do something like this, this may seem a bit sketchy. Here is a summary of all of the dlls and where you can read up on or cross-validate them.
 - `ModBootstrap.dll`: This will be the central library for modding Holder of Place. It will start Harmony, interface with the source code, and load mods. It is created by me, and the code is accessible in this very repository.
   - Official github: You are here.
 - `0Harmony.dll`: This is the harmony library, created by Andreas Pardeike. In the words of its GitHub, it is "a library for patching, replacing and decorating .NET and Mono methods during reuntime". This is the library that will allow modders to modify the source code in a reversible way.
@@ -55,22 +90,94 @@ Once you have that downloaded, you are ready for the next step.
 
 ---
 
-## Step 1: Locating and Moving Files [IN PROGRESS]
+## Step 1: Locating and Moving Files
 First, find where the game's source code is saved on your computer. 
 - The easiest way to do this is right-click the game in steam and select "Manage > Browse Local Files".
-- For the folder that just popped up, click "HolderOfPlace_Data" and then "Managed".
-- inside the "Managed" folder is a bunch of dll files.
-- You need to (1) make a copy of "AssemblyCSharp.dll" somewhere else (I copied it onto my desktop) and (2) save the file address of the new dll location and the address of the managed folder.
-- Place the Harmony dll and its dependency dlls into the managed folder.
 
-## Step 2: Running the Code [IN PROGRESS]
-The repository has the code to add entry points to the game's source code. Distributing the modified source code would put me in a legal bind, but running the code on your copy of the source code should be fine.
-- Download the repository as a zip folder and unpack it.
-- Open the .sln file in Visual Studios
-- There are three file addresses at the top of the DLLEditor.cls file. Change them to your version of the three.
-- Run the DLLEditor file (there should be a green play button somewhere at the top). This wil be the step where your computer and antivirus is warning you (if not before).
-You have the code in front of you, you can read through to see if there is anything questionable with it.
-- You should get an output that looks like this. If you did, good job!
+<p align=center>
+<img width="337" height="359" alt="BrowseLocalFiles" src="https://github.com/user-attachments/assets/487272e7-7eb5-4f21-878d-55ed7c2c2e8f" />
+</p>
 
-## Step 3: Run the Game [IN PROGRESS]
-Run the game and you should see a debug log pop-up. That means everything is running smoothly.
+- For the folder that just popped up, click "HolderOfPlace_Data".
+- Place the downloaded StreamingAssets inside this data folder (shown below).
+
+<p align=center>
+<img width="500" height="500" alt="Screenshot 2026-03-04 234852" src="https://github.com/user-attachments/assets/cddc4089-88ee-430c-96a8-333c45d51210" />
+</p>
+ 
+- Now, head to the "Managed" folder. You will see a bunch of dll files.
+- Place the downloaded ModBootstrap.dll inside. In addition, place all of the dlls from the downloaded Dependencies folder inside this folder as well (there were 7 of them, making a total of 8 new dlls inside of Managed).
+
+<p align=center>
+<img width="491" height="320" alt="image" src="https://github.com/user-attachments/assets/747eebb6-771f-4af0-8f59-9cd1698b5003" />
+</p>
+
+- Save the full file address for the managed folder somewhere, like Notepad, for later use (the filepath will almost certainly be `C:\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed`).
+- In addition, find the the `AssemblyCSharp.dll` in the managed folder and make a copy of it (I copied mine onto a new folder on the desktop). Save the file path for later use (results vary but it might look similar to `C:\Users\[USER]\Desktop\HolderOfPlace\Assembly-CSharp.dll`).
+
+And with that, all of the files are in the right place. Hopefully, visual studios has finished installing so we can move on to that.
+
+## Step 2: Cleaning Code in Visual Studios
+This repository has the code to add entry points to the game's source code. Distributing the modified source code would put me in a legal bind, but running the code on your copy of the source code should be fine. This is why you had to download Visual Studios. 
+- Download the repository code. You can download it through the link in the Downloads section. If you are familar with Github, you can clone/fork the repository and download a local copy instead.
+- Open the .sln file in Visual Studios (Open Visual Studios and click on whatever button says "open solution"). Navigate to the .sln file inside the downloaded source code folder.
+
+<p align=center>
+<img width="372" height="394" alt="image" src="https://github.com/user-attachments/assets/a55ffa16-daa3-4aaf-afff-1f73af849bc2" />
+</p>
+
+- Once the solution is open, there is usually a solution explorer to the right. Open it, click the drop-down on "DLLEditor" and then double-click "Program.cs".
+
+<p align=center>
+<img width="320" height="433" alt="image" src="https://github.com/user-attachments/assets/a845c875-c268-4f06-992c-aec963f6bcec" />
+</p>
+
+- There are two file addresses at the top of the DLLEditor.cls file. A couple instructions ago, we saved two filepaths for later use. We will use them here. Replace everthing inside the double-quotes ("") of `outputDirectory` with the path to your managed folder. Do something similar with the `inputPath` and the path to your AssemblyCSharp.dll copy.
+
+```C#
+//Change these paths
+//You may notice that the backslash's doubled (\ -> \\). This is normal.
+static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
+static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";  
+```
+
+Now we simply "fix all the errors". I am going to list as much possible errors that could have formed from this process. If I miss any, let me know so I can add to this document (pictures also help!). 
+
+### Missing references to dlls
+This might not be an issue because your managed folder is likely in the exact same place as mine. In case it isn't,
+right-click "dependencies" under DLLEditor and click "Add Project Reference...". This opens up a new window. Click browse, navigate all the way to the managed folder (I hope you still have that filepath saved) and add `Assembly_CSharp.dll` and `ModBootstrap.dll`.
+
+### Unload the other project
+The other project in this solution is named `ModBootstrap`. This is source code for `ModBootstrap.dll`. If this project is throwing errors at you, simply right-click the project and click "Unload project". It can be reloaded later. 
+
+---
+
+If you see a red squiggly line under any line of code, you can right-click the line and view possible fixes. These are usually correct, but not always (if the "fix" makes more errors, just undo it).
+
+
+## Step 3: Run the Program. Run the Game
+> [!Warning]
+> If it has not happened already, your computer's antivirus should be screaming at you to not be so trusting of files downloaded through the web (and rightfully so). The next step will run the program and, if malicious, possibly harm your computer. The good news is that the code that it runs is right in front of you (the `Program.cs`). It's a relatively small file that consists of the same cycle: find method, find line in that method, inject a line calling method from ModBootstrap (which you also have the code for). If you see anything suspicious, ask about it and I'll give you an explanation.
+
+- Click the play button (green triangle, usually with the word "DLLEditor" nearby) at the top to run the code.
+- A command window will pop and tell you the results. If it worked perfectly, the output will look like the picture below:
+
+<p align=center>
+<img width="555" height="313" alt="image" src="https://github.com/user-attachments/assets/ff5c837c-08ce-459c-a33d-a8e9fd47222f" />
+</p>
+
+- If you got those messages, you can safely close out of the command window and Visual Studios.
+- Run the game and you see a debug window pop up and the title screen has some extra words in the center:
+
+<p align=center>
+<img width="350" height="275" alt="image" src="https://github.com/user-attachments/assets/fa1fd85b-1b11-442a-b533-248b2a99e365" />
+</p>
+
+Congratulations! You have successfully enabled modding for Holder of Place. Here is a quick tour:
+
+### Debug Log
+That extra window that opened up with `Hello World` shows you the debug messages that occur as you play the game. Useful for developing mods and, umm, debugging.
+### Command Line
+Press ~ and a prompt appears for you to type commands. I'll leave it to you to figure out how these commands work. These are made for the purpose of testing things out.
+### Mod Menu
+If you go to settings, you will also find a gray rectangle on the right side of the screen. Once you installed mods, you can cycle through mods and turn toggle them on/off. How do you add mods? If you place a mod's `.dll` file in a folder (maybe with an icon), and place that folder in `...\StreamingAssets\Mods`, it will show up in the game the next time you play (don't forget to turn on the mod!).
