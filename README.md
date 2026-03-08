@@ -31,9 +31,9 @@ I would also like to thank the creators of Holder of Place for making the game (
 > 3. Locate `...\HolderOfPlace_Data\Managed` folder and copy its filepath for later.
 > 4. Place ModBootstrap.dll into this `...\Managed` folder (`...\Managed\ModBootstrap.dll`).
 > 5. Place all of the dlls in the Dependencies folder into this `...\HolderOfPlace_Data\Managed` (something like `...\Managed\DLL1.dll`, `...\Managed\DLL2.dll`, etc.)
-> 6. Inside of `...\Managed`, make a copy of `...\Managed\CSharp-Assembly.dll` and place it somewhere else. Save the filepath for later.
+> 6. Inside of `...\Managed`, make a copy of `...\Managed\Assembly-CSharp.dll` and place it somewhere else. Save the filepath for later.
 > 7. Open the source code (obtained via .zip or forking/cloning the repository) in Visual Studios or similar IDE.
-> 8. For the DLLEditor project, add references to both `...\Managed\ModBootstrap.dll` and `...\Managed\CSharp-Assembly.dll` on your computer.
+> 8. For the DLLEditor project, add references to both `...\Managed\ModBootstrap.dll` and `...\Managed\Assembly-CSharp.dll` on your computer.
 > 9. They are likely some reference errors still. Clear those out and any other erros. Feel free to unload the ModBootstrap project if you don't want to fix those errors.
 > 10. Replace `outputDirectory` with the filepath you saved from step 3. Replace `inputPath` with the filepath you saved from step 6.
 > 11. Run DLLEditor.
@@ -145,8 +145,11 @@ static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\comm
 Now we simply "fix all the errors". I am going to list as much possible errors that could have formed from this process. If I miss any, let me know so I can add to this document (pictures also help!). 
 
 ### Missing references to dlls
-This might not be an issue because your managed folder is likely in the exact same place as mine. In case it isn't,
-right-click "dependencies" under DLLEditor and click "Add Project Reference...". This opens up a new window. Click browse, navigate all the way to the managed folder (I hope you still have that filepath saved) and add `Assembly_CSharp.dll` and `ModBootstrap.dll`.
+The project relies on references to some of the dlls in the managed folder. Moving the code to another computer likely broke these, so we need to reset them. What you want to do is in the solution explorer on the right side, go to DLLEditor > Dependencies > References and remove the 3-5 references you see there (ctrl+click/shift+click to select multiple, right-click, and select remove). Then, right-click This opens up a new window. Click browse, navigate all the way to the managed folder (I hope you still have that filepath saved) and add the following dlls: `Assembly_CSharp.dll`, `ModBootstrap.dll`, `UnityEngine.dll`, `UnityEngine.CoreMdule.dll`, `UnityEngine.GridModule.dll` (the third and last one were once used in an earlier build. They may be optional now).
+
+<p align=center>
+<img width="353" height="393" alt="image" src="https://github.com/user-attachments/assets/d39b1085-45fc-456f-8ab9-d94e512df214" />
+</p>
 
 ### Unload the other project
 The other project in this solution is named `ModBootstrap`. This is source code for `ModBootstrap.dll`. If this project is throwing errors at you, simply right-click the project and click "Unload project". It can be reloaded later. 
@@ -167,8 +170,8 @@ If you see a red squiggly line under any line of code, you can right-click the l
 <img width="555" height="313" alt="image" src="https://github.com/user-attachments/assets/ff5c837c-08ce-459c-a33d-a8e9fd47222f" />
 </p>
 
-- If you got those messages, you can safely close out of the command window and Visual Studios.
-- Run the game and you see a debug window pop up and the title screen has some extra words in the center:
+- If you got those messages, you are essentially finished! You can safely close out of that command window and Visual Studio.
+- Run the game and you will be greeted by a new debug window and some extra words on the title screen:
 
 <p align=center>
 <img width="350" height="275" alt="image" src="https://github.com/user-attachments/assets/fa1fd85b-1b11-442a-b533-248b2a99e365" />
